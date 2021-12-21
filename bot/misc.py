@@ -1,4 +1,13 @@
 from aiogram import Dispatcher, types
+from aiogram.dispatcher.filters import BoundFilter
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+from bot.config import BOT_ADMINS
+
+
+class IsAdmin(BoundFilter):
+    async def check(self, message: types.Message) -> bool:
+        return str(message.from_user.id) in BOT_ADMINS
 
 
 async def set_default_commands(dp: Dispatcher):
@@ -10,3 +19,10 @@ async def set_default_commands(dp: Dispatcher):
             types.BotCommand("/interactive", "Interactive mode")
         ]
     )
+
+
+main_menu_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton("⚙ Configure connection", callback_data="configure_connection")]
+    ]
+)
