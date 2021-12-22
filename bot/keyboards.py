@@ -4,6 +4,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 def generate_configuration_menu_keyboard(
         hostname: str = None, user: str = None, password: str = None, port: str = None
 ) -> InlineKeyboardMarkup:
+    """Returns the SSH connection configuration keyboard corresponding to the passed data."""
     configuration = locals()
     options_buttons = [
         InlineKeyboardButton(f"{'Edit' if value else '➕ Add'} {option}", callback_data=f"{option}_option")

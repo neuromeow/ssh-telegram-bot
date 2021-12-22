@@ -18,6 +18,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
 
 
 async def generate_configuration_menu(message: types.Message, state: FSMContext):
+    """Switches to the state of waiting for the SSH configuration options, replies a special message and keyboard."""
     configuration = await state.get_data()
     await message.answer(
         "\n".join(f"{option.title()}: {value}" for option, value in configuration.items())
@@ -35,21 +36,21 @@ async def configuration_menu_button(callback: types.CallbackQuery, state: FSMCon
 
 
 async def option_button(callback: types.CallbackQuery, state: FSMContext):
-    """Universal function of the invitation to input SSH configuration option corresponding to the button."""
+    """Switches to the state of waiting for the SSH configuration option value that matches the passed callback data."""
     option = callback.data.split('_')[0]
     await callback.message.edit_text(f"Enter the {option}.")
     await state.set_state(f"ConfigurationOptions:{option}")
 
 
 async def enter_option_value(message: types.Message, state: FSMContext):
-    """Universal function for entering SSH configuration option value corresponding to the state."""
+    """Accepts and updates the value of SSH configuration option corresponding to the passed state."""
     current_state = await state.get_state()
     option = current_state.split(':')[1]
     await update_option_value(option, message, state)
 
 
 async def update_option_value(option: str, message: types.Message, state: FSMContext) -> None:
-    """Sets and updates the value of the passed option."""
+    """Sets and updates the value of the passed option in the state data, switches back to the configuration state."""
     if len(message.text) == 4096:
         await message.reply(f"Please note that this message will be added as {option} value.")
     configuration = await state.get_data()
@@ -59,6 +60,7 @@ async def update_option_value(option: str, message: types.Message, state: FSMCon
 
 
 async def reset_button(callback: types.CallbackQuery, state: FSMContext):
+    """Resets all user data (SSH configuration options and their values)."""
     await state.reset_data()
     await callback.message.edit_text("The current values of the connection configuration options have been reset.")
     await generate_configuration_menu(callback.message, state)
