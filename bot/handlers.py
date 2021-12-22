@@ -66,6 +66,12 @@ async def update_option_value(option: str, message: types.Message, state: FSMCon
     await generate_connection_menu(message, state)
 
 
+async def reset_configuration(callback: types.CallbackQuery, state: FSMContext):
+    await state.reset_data()
+    await callback.message.edit_text("The current values of the connection configuration options have been reset.")
+    await generate_connection_menu(callback.message, state)
+
+
 async def undefined_request(message: types.Message):
     await message.answer(
         "Undefined request"
@@ -78,4 +84,5 @@ def register_handlers(dp: Dispatcher):
     dp.register_callback_query_handler(configure_connection_button, Text(equals="connection"))
     dp.register_callback_query_handler(option_button, Text(endswith="option"), state=ConnectionStatus.configuration)
     dp.register_message_handler(enter_option_value, state=ConfigurationOptions.states_names)
+    dp.register_callback_query_handler(reset_configuration, Text(equals="reset"), state=ConnectionStatus.configuration)
     dp.register_message_handler(undefined_request, content_types=ContentType.ANY, state="*")

@@ -12,6 +12,8 @@ def generate_connection_keyboard(
             [InlineKeyboardButton(f"{'✔' if password else '➕'} Password", callback_data="password_option")]
         ]
     )
+    if hostname or user or password or port:
+        connection_keyboard.add(InlineKeyboardButton("➰ Reset", callback_data="reset"))
     if hostname and user and password and port:
         connection_keyboard.add(InlineKeyboardButton("👨🏻‍💻 Connect", callback_data="connect"))
     return connection_keyboard
