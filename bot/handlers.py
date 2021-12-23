@@ -81,6 +81,7 @@ async def set_command_mode_state(message: types.Message):
 
 
 async def connect_button(callback: types.CallbackQuery, state: FSMContext):
+    """Checks the possibility of SSH connection and switches to the state of waiting for input of the bot's commands."""
     if len(await state.get_data()) < 4:
         await callback.answer()
     else:
@@ -110,6 +111,7 @@ async def command_uptime(message: types.Message, state: FSMContext):
 
 
 async def command_interactive(message: types.Message, state: FSMContext):
+    """Reverts to the previous state or switches to the state of interactive mode depending on the passed state."""
     if await state.get_state() == ConnectionStatus.interactive_mode.state:
         await message.answer("Interactive mode disabled.")
         await set_command_mode_state(message)
