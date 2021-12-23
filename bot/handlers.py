@@ -83,14 +83,33 @@ async def connect_button(callback: types.CallbackQuery, state: FSMContext):
         await callback.answer()
     else:
         await callback.message.edit_text("Please wait, connecting...")
-        execute_command(**configuration)
-        await set_commands_state(callback.message)
+        try:
+            execute_command(**configuration)
+        except Exception as e:
+            await callback.message.answer(
+                "Connection failed with error:\n"
+                f"{e}\n\n"
+                "Try changing your connection settings (SSH configuration options):\n"
+                "/connect"
+            )
+        else:
+            await set_commands_state(callback.message)
 
 
 async def undefined_request(message: types.Message):
     await message.answer(
         "Undefined request"
     )
+
+
+async def unexpected_exception(update: types.Update, exception: Exception):
+    await update.message.answer(
+        "Something went wrong with error:\n"
+        f"{exception}\n\n"
+        "Better to restart the bot:\n"
+        "/start"
+    )
+    return True
 
 
 def register_handlers(dp: Dispatcher):
@@ -102,3 +121,4 @@ def register_handlers(dp: Dispatcher):
     dp.register_callback_query_handler(reset_button, Text(equals="reset"), state=ConnectionStatus.configuration)
     dp.register_callback_query_handler(connect_button, Text(equals="connect"), state=ConnectionStatus.configuration)
     dp.register_message_handler(undefined_request, content_types=ContentType.ANY, state="*")
+    dp.register_errors_handler(unexpected_exception)
