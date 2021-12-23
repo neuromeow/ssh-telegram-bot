@@ -13,7 +13,7 @@ from bot.config import BOT_ADMINS
 
 class ConnectionStatus(StatesGroup):
     configuration = State()
-    commands = State()
+    command_mode = State()
 
 
 class ConfigurationOptions(StatesGroup):
@@ -32,7 +32,7 @@ async def set_default_commands(dp: Dispatcher):
     await dp.bot.set_my_commands(
         [
             types.BotCommand("/connect", "SSH configure and connect"),
-            types.BotCommand("/reboot", "Reboot server"),
+            types.BotCommand("/whoami", "Check user"),
             types.BotCommand("/uptime", "Check status"),
             types.BotCommand("/interactive", "Interactive mode")
         ]

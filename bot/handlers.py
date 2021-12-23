@@ -66,15 +66,15 @@ async def reset_button(callback: types.CallbackQuery, state: FSMContext):
     await generate_configuration_menu(callback.message, state)
 
 
-async def set_commands_state(message: types.Message):
+async def set_command_mode_state(message: types.Message):
     await message.answer(
         "Now you can use some commands to be executed on the remote server:\n"
-        "/uptime - uptime description\n"
-        "/reboot - reboot description\n\n"
+        "/whoami - whoami description\n"
+        "/uptime - uptime description\n\n"
         "Or switch to interactive mode to enter command line shell commands yourself:\n"
         "/interactive - interactive description"
     )
-    await ConnectionStatus.commands.set()
+    await ConnectionStatus.command_mode.set()
 
 
 async def connect_button(callback: types.CallbackQuery, state: FSMContext):
@@ -93,7 +93,19 @@ async def connect_button(callback: types.CallbackQuery, state: FSMContext):
                 "/connect"
             )
         else:
-            await set_commands_state(callback.message)
+            await set_command_mode_state(callback.message)
+
+
+async def command_whoami(message: types.Message, state: FSMContext):
+    configuration = await state.get_data()
+    whoami_response = execute_command(**configuration, command="whoami", response=True)
+    await message.answer(whoami_response)
+
+
+async def command_uptime(message: types.Message, state: FSMContext):
+    configuration = await state.get_data()
+    uptime_response = execute_command(**configuration, command="uptime", response=True)
+    await message.answer(uptime_response)
 
 
 async def undefined_request(message: types.Message):
@@ -120,5 +132,7 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(enter_option_value, state=ConfigurationOptions.states_names)
     dp.register_callback_query_handler(reset_button, Text(equals="reset"), state=ConnectionStatus.configuration)
     dp.register_callback_query_handler(connect_button, Text(equals="connect"), state=ConnectionStatus.configuration)
+    dp.register_message_handler(command_whoami, commands=["whoami"], state=ConnectionStatus.command_mode)
+    dp.register_message_handler(command_uptime, commands=["uptime"], state=ConnectionStatus.command_mode)
     dp.register_message_handler(undefined_request, content_types=ContentType.ANY, state="*")
     dp.register_errors_handler(unexpected_exception)
