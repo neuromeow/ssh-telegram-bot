@@ -5,7 +5,7 @@ from aiogram.dispatcher.filters import CommandStart, Text
 from aiogram.types.message import ContentType
 
 from bot.keyboards import generate_configuration_menu_keyboard, start_menu_keyboard
-from bot.misc import ConnectionStatus, ConfigurationOptions, IsAdmin
+from bot.misc import ConnectionStatus, ConfigurationOptions, IsAdmin, execute_command
 
 
 async def cmd_start(message: types.Message, state: FSMContext):
@@ -66,8 +66,25 @@ async def reset_button(callback: types.CallbackQuery, state: FSMContext):
     await generate_configuration_menu(callback.message, state)
 
 
+async def set_commands_state(message: types.Message):
+    await message.answer(
+        "Now you can use some commands to be executed on the remote server:\n"
+        "/uptime - uptime description\n"
+        "/reboot - reboot description\n\n"
+        "Or switch to interactive mode to enter command line shell commands yourself:\n"
+        "/interactive - interactive description"
+    )
+    await ConnectionStatus.commands.set()
+
+
 async def connect_button(callback: types.CallbackQuery, state: FSMContext):
-    pass
+    configuration = await state.get_data()
+    if len(configuration) < 4:
+        await callback.answer()
+    else:
+        await callback.message.edit_text("Please wait, connecting...")
+        execute_command(**configuration)
+        await set_commands_state(callback.message)
 
 
 async def undefined_request(message: types.Message):
