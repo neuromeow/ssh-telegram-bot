@@ -1,10 +1,7 @@
 from aiogram import Dispatcher, types
+from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import BoundFilter
 from aiogram.dispatcher.filters.state import State, StatesGroup
-
-import asyncio
-
-from loguru import logger
 
 import paramiko
 
@@ -19,7 +16,7 @@ class ConnectionStatus(StatesGroup):
 class ConfigurationOptions(StatesGroup):
     hostname = State()
     port = State()
-    user = State()
+    username = State()
     password = State()
 
 
@@ -28,7 +25,7 @@ class IsAdmin(BoundFilter):
         return str(message.from_user.id) in BOT_ADMINS
 
 
-async def set_default_commands(dp: Dispatcher):
+async def set_bot_commands(dp: Dispatcher):
     await dp.bot.set_my_commands(
         [
             types.BotCommand("/connect", "SSH configure and connect"),
@@ -39,12 +36,11 @@ async def set_default_commands(dp: Dispatcher):
     )
 
 
-def execute_command(
-        hostname: str, user: str, password: str, port: int, command: str = None, response: bool = False
-) -> [None, str]:
+async def execute_command(state: FSMContext, command: str = None, response: bool = False) -> [None, str]:
+    configuration = await state.get_data()
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(hostname=hostname, username=user, password=password, port=port)
+    client.connect(**configuration)
     if command:
         stdin, stdout, stderr = client.exec_command(command)
         if response:

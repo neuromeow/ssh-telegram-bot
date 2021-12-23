@@ -5,12 +5,12 @@ from loguru import logger
 
 from bot.config import BOT_TOKEN
 from bot.handlers import register_handlers
-from bot.misc import set_default_commands
+from bot.misc import set_bot_commands
 
 
 async def on_startup(dp: Dispatcher):
     register_handlers(dp)
-    await set_default_commands(dp)
+    await set_bot_commands(dp)
     logger.info("Telegram bot for SSH connection launched.")
 
 

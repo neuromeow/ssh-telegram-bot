@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
 def generate_configuration_menu_keyboard(
-        hostname: str = None, user: str = None, password: str = None, port: str = None
+        hostname: str = None, port: str = None, username: str = None, password: str = None,
 ) -> InlineKeyboardMarkup:
     """Returns the SSH connection configuration keyboard corresponding to the passed data."""
     configuration = locals()

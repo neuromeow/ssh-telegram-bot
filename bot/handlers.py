@@ -1,8 +1,9 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import CommandStart, Text
-
 from aiogram.types.message import ContentType
+
+from loguru import logger
 
 from bot.keyboards import generate_configuration_menu_keyboard, start_menu_keyboard
 from bot.misc import ConnectionStatus, ConfigurationOptions, IsAdmin, execute_command
@@ -69,25 +70,25 @@ async def reset_button(callback: types.CallbackQuery, state: FSMContext):
 async def set_command_mode_state(message: types.Message):
     await message.answer(
         "Now you can use some commands to be executed on the remote server:\n"
-        "/whoami - whoami description\n"
-        "/uptime - uptime description\n\n"
+        "/whoami to display the name of the currently logged-in user\n"
+        "/uptime to find out how long the system is active (running)\n\n"
         "Or switch to interactive mode to enter command line shell commands yourself:\n"
-        "/interactive - interactive description"
+        "/interactive to enter/exit interactive mode"
     )
     await ConnectionStatus.command_mode.set()
 
 
 async def connect_button(callback: types.CallbackQuery, state: FSMContext):
-    configuration = await state.get_data()
-    if len(configuration) < 4:
+    if len(await state.get_data()) < 4:
         await callback.answer()
     else:
-        await callback.message.edit_text("Please wait, connecting...")
+        await callback.message.edit_text("Wait for confirmation of the possibility of SSH connection...")
         try:
-            execute_command(**configuration)
+            await execute_command(state)
         except Exception as e:
             await callback.message.answer(
-                "Connection failed with error:\n"
+                "Sorry, connection is impossible.\n\n"
+                "Error:\n"
                 f"{e}\n\n"
                 "Try changing your connection settings (SSH configuration options):\n"
                 "/connect"
@@ -97,14 +98,12 @@ async def connect_button(callback: types.CallbackQuery, state: FSMContext):
 
 
 async def command_whoami(message: types.Message, state: FSMContext):
-    configuration = await state.get_data()
-    whoami_response = execute_command(**configuration, command="whoami", response=True)
+    whoami_response = await execute_command(state, command="whoami", response=True)
     await message.answer(whoami_response)
 
 
 async def command_uptime(message: types.Message, state: FSMContext):
-    configuration = await state.get_data()
-    uptime_response = execute_command(**configuration, command="uptime", response=True)
+    uptime_response = await execute_command(state, command="uptime", response=True)
     await message.answer(uptime_response)
 
 
@@ -114,13 +113,8 @@ async def undefined_request(message: types.Message):
     )
 
 
-async def unexpected_exception(update: types.Update, exception: Exception):
-    await update.message.answer(
-        "Something went wrong with error:\n"
-        f"{exception}\n\n"
-        "Better to restart the bot:\n"
-        "/start"
-    )
+async def unexpected_exception(_update: types.Update, exception: Exception):
+    logger.debug(exception)
     return True
 
 
