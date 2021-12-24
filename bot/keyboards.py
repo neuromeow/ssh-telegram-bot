@@ -1,6 +1,13 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
+start_menu_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton("⚙ Connect via SSH", callback_data="configure")]
+    ]
+)
+
+
 def generate_configuration_menu_keyboard(
         hostname: str = None, port: str = None, username: str = None, password: str = None,
 ) -> InlineKeyboardMarkup:
@@ -12,15 +19,8 @@ def generate_configuration_menu_keyboard(
     ]
     configuration_keyboard = InlineKeyboardMarkup(row_width=1).add(*options_buttons)
     if any(configuration.values()):
-        configuration_keyboard.add(InlineKeyboardButton("➰ Reset", callback_data="reset"))
+        configuration_keyboard.add(InlineKeyboardButton("Reset", callback_data="reset"))
     configuration_keyboard.add(
         InlineKeyboardButton(f"{'👨🏻‍💻' if all(configuration.values()) else '🚫'} Connect", callback_data="connect")
     )
     return configuration_keyboard
-
-
-start_menu_keyboard = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [InlineKeyboardButton("⚙ Connect via SSH", callback_data="configure")]
-    ]
-)

@@ -38,7 +38,7 @@ async def set_bot_commands(dp: Dispatcher):
 
 
 async def execute_command(state: FSMContext, command: str = None, response: bool = False) -> [None, str]:
-    """Connects via SSH and, if required, executes the passed command and returns its result."""
+    """Connects via SSH and, if required, executes the command and returns its result, and immediately disconnects."""
     configuration = await state.get_data()
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
