@@ -71,3 +71,7 @@ mv .env.dist .env
 ```
 python -m bot
 ```
+
+## License
+
+This project is released under the MIT License. See [LICENSE](https://github.com/neuromeow/ssh-telegram-bot/blob/master/LICENSE) for the full licensing condition.
