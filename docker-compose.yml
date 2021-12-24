@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  telegram-bot:
+    container_name: ssh-telegram-bot
+    build: .
+    stop_signal: SIGINT
+    restart: always
+    env_file:
+      - .env
