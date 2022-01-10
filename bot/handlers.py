@@ -7,7 +7,7 @@ from aiogram.utils.exceptions import MessageTextIsEmpty
 from loguru import logger
 
 from bot.keyboards import generate_configuration_menu_keyboard, start_menu_keyboard
-from bot.misc import ConnectionStatus, ConfigurationOptions, IsAdmin, execute_command
+from bot.misc import ConnectionStatus, ConfigurationOptions, IsAdmin, ssh_connection
 
 
 async def cmd_start(message: types.Message, state: FSMContext):
@@ -46,19 +46,19 @@ async def option_button(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(f"ConfigurationOptions:{option}")
 
 
-async def enter_option_value(message: types.Message, state: FSMContext):
-    """Accepts and updates the value of SSH configuration option corresponding to the passed state."""
-    current_state = await state.get_state()
-    option = current_state.split(':')[1]
-    await update_option_value(option, message, state)
-
-
 async def update_option_value(option: str, message: types.Message, state: FSMContext) -> None:
     """Sets and updates the value of the passed option in the state data, switches back to the configuration state."""
     configuration = await state.get_data()
     configuration[option] = message.text
     await state.update_data(configuration)
     await set_configuration_state(message, state)
+
+
+async def enter_option_value(message: types.Message, state: FSMContext):
+    """Accepts and updates the value of SSH configuration option corresponding to the passed state."""
+    current_state = await state.get_state()
+    option = current_state.split(':')[1]
+    await update_option_value(option, message, state)
 
 
 async def reset_button(callback: types.CallbackQuery, state: FSMContext):
@@ -88,7 +88,7 @@ async def connect_button(callback: types.CallbackQuery, state: FSMContext):
     else:
         await callback.message.edit_text("Wait for confirmation of the possibility of SSH connection...")
         try:
-            await execute_command(state)
+            await ssh_connection(state)
         except Exception as e:
             await callback.message.answer(
                 "Sorry, connection is impossible.\n\n"
@@ -103,22 +103,23 @@ async def connect_button(callback: types.CallbackQuery, state: FSMContext):
 
 async def cmd_whoami(message: types.Message, state: FSMContext):
     """Executes whoami shell command and returns its result."""
-    whoami_response = await execute_command(state, command="whoami", response=True)
+    whoami_response = await ssh_connection(state, command="whoami", response=True)
     await message.answer(whoami_response)
 
 
 async def cmd_uptime(message: types.Message, state: FSMContext):
     """Executes uptime shell command and returns its result."""
-    uptime_response = await execute_command(state, command="uptime", response=True)
+    uptime_response = await ssh_connection(state, command="uptime", response=True)
     await message.answer(uptime_response)
 
 
 async def cmd_interactive(message: types.Message, state: FSMContext):
     """Reverts to the previous state or switches to the state of interactive mode depending on the passed state."""
-    if await state.get_state() == ConnectionStatus.interactive_mode.state:
+    current_state = await state.get_state()
+    if current_state == ConnectionStatus.interactive_mode.state:
         await message.answer("Interactive mode disabled")
         await set_command_mode_state(message)
-    else:
+    elif current_state == ConnectionStatus.command_mode.state:
         await message.answer("Interactive mode enabled")
         await message.answer(
             "<b>IMPORTANT</b>\n\n"
@@ -133,13 +134,15 @@ async def cmd_interactive(message: types.Message, state: FSMContext):
             "file</b>"
         )
         await ConnectionStatus.next()
+    else:
+        await undefined_request(message)
 
 
-async def execute_shell_command(message: types.Message, state: FSMContext):
+async def execute_interactive_command(message: types.Message, state: FSMContext):
     """Accepts the user's message and executes it as a shell command, returning the execution result."""
     try:
-        shell_command_response = await execute_command(state, command=message.text, response=True)
-        await message.answer(shell_command_response)
+        interactive_command_response = await ssh_connection(state, command=message.text, response=True)
+        await message.answer(interactive_command_response)
     except MessageTextIsEmpty:
         await message.answer("stdout/stderr are empty – your command executed but returned nothing")
 
@@ -167,8 +170,7 @@ def register_handlers(dp: Dispatcher):
     dp.register_callback_query_handler(connect_button, Text(equals="connect"), state=ConnectionStatus.configuration)
     dp.register_message_handler(cmd_whoami, commands=["whoami"], state=ConnectionStatus.command_mode)
     dp.register_message_handler(cmd_uptime, commands=["uptime"], state=ConnectionStatus.command_mode)
-    dp.register_message_handler(cmd_interactive, commands=["interactive"], state=ConnectionStatus.command_mode)
-    dp.register_message_handler(cmd_interactive, commands=["interactive"], state=ConnectionStatus.interactive_mode)
-    dp.register_message_handler(execute_shell_command, state=ConnectionStatus.interactive_mode)
+    dp.register_message_handler(cmd_interactive, commands=["interactive"], state=ConnectionStatus.states_names)
+    dp.register_message_handler(execute_interactive_command, state=ConnectionStatus.interactive_mode)
     dp.register_message_handler(undefined_request, IsAdmin(), content_types=ContentType.ANY, state="*")
     dp.register_errors_handler(unexpected_exception)
