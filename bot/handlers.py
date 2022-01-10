@@ -11,6 +11,7 @@ from bot.misc import ConnectionStatus, ConfigurationOptions, IsAdmin, execute_co
 
 
 async def cmd_start(message: types.Message, state: FSMContext):
+    """Resets the current state (if any), sends a welcome message - serves as an entry point for the user."""
     if await state.get_state():
         await state.reset_state()
     await message.answer(
@@ -33,6 +34,7 @@ async def set_configuration_state(message: types.Message, state: FSMContext):
 
 
 async def configuration_menu_button(callback: types.CallbackQuery, state: FSMContext):
+    """Reacts to pressing the start menu keyboard button by calling the function to set the SSH configuration state."""
     await set_configuration_state(callback.message, state)
     await callback.answer()
 
@@ -80,7 +82,7 @@ async def set_command_mode_state(message: types.Message):
 
 
 async def connect_button(callback: types.CallbackQuery, state: FSMContext):
-    """Checks the possibility of SSH connection and switches to the state of waiting for input of the bot's commands."""
+    """Checks the possibility of SSH connection and switches to the state of waiting for input of the bot commands."""
     if len(await state.get_data()) < 4:
         await callback.answer()
     else:
@@ -100,11 +102,13 @@ async def connect_button(callback: types.CallbackQuery, state: FSMContext):
 
 
 async def cmd_whoami(message: types.Message, state: FSMContext):
+    """Executes whoami shell command and returns its result."""
     whoami_response = await execute_command(state, command="whoami", response=True)
     await message.answer(whoami_response)
 
 
 async def cmd_uptime(message: types.Message, state: FSMContext):
+    """Executes uptime shell command and returns its result."""
     uptime_response = await execute_command(state, command="uptime", response=True)
     await message.answer(uptime_response)
 
@@ -132,6 +136,7 @@ async def cmd_interactive(message: types.Message, state: FSMContext):
 
 
 async def execute_shell_command(message: types.Message, state: FSMContext):
+    """Accepts the user's message and executes it as a shell command, returning the execution result."""
     try:
         shell_command_response = await execute_command(state, command=message.text, response=True)
         await message.answer(shell_command_response)
@@ -140,16 +145,19 @@ async def execute_shell_command(message: types.Message, state: FSMContext):
 
 
 async def undefined_request(message: types.Message):
+    """Replies with a special message for requests for which there are currently no handlers."""
     response = "The command is currently unavailable" if message.text.startswith("/") else "Undefined request"
     await message.answer(response)
 
 
 async def unexpected_exception(_update: types.Update, exception: Exception):
+    """Catches and logs all errors and exceptions."""
     logger.debug(exception)
     return True
 
 
 def register_handlers(dp: Dispatcher):
+    """Registers all bot handlers."""
     dp.register_message_handler(cmd_start, IsAdmin(), CommandStart(), state="*")
     dp.register_message_handler(set_configuration_state, IsAdmin(), commands=["connect"], state="*")
     dp.register_callback_query_handler(configuration_menu_button, Text(equals="configure"))
