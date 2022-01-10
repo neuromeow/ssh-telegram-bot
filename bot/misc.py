@@ -27,9 +27,10 @@ class IsAdmin(BoundFilter):
 
 
 async def set_bot_commands(dp: Dispatcher):
+    """Sets the bot commands to the bot user interface."""
     await dp.bot.set_my_commands(
         [
-            types.BotCommand("/connect", "SSH configure and connect"),
+            types.BotCommand("/connect", "configure and connect via SSH"),
             types.BotCommand("/whoami", "whoami command"),
             types.BotCommand("/uptime", "uptime command"),
             types.BotCommand("/interactive", "enable/disable interactive mode")
@@ -37,8 +38,8 @@ async def set_bot_commands(dp: Dispatcher):
     )
 
 
-async def execute_command(state: FSMContext, command: str = None, response: bool = False) -> [None, str]:
-    """Connects via SSH and, if required, executes the command and returns its result, and immediately disconnects."""
+async def ssh_connection(state: FSMContext, command: str = None, response: bool = False) -> [None, str]:
+    """Connects via SSH and immediately disconnects, if necessary, executes the command and returns its result."""
     configuration = await state.get_data()
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

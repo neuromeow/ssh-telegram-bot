@@ -17,7 +17,7 @@ async def on_startup(dp: Dispatcher):
 async def on_shutdown(dp: Dispatcher):
     await dp.storage.close()
     await dp.storage.wait_closed()
-    logger.info("Telegram bot for SSH connection launched finished.")
+    logger.info("Telegram bot for SSH connection finished.")
 
 
 def main():
