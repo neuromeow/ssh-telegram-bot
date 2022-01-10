@@ -14,8 +14,8 @@ async def cmd_start(message: types.Message, state: FSMContext):
     if await state.get_state():
         await state.reset_state()
     await message.answer(
-        "This bot provides the ability to SSH connection with common SSH configuration options: "
-        "<b>HostName (as IP address), User, Port and Password</b>",
+        "This bot provides the ability to connect via Secure Shell (SSH) to the Linux-based machines "
+        "using common SSH configuration options: <b>HostName (as IP address), User, Port and Password</b>",
         reply_markup=start_menu_keyboard
     )
 

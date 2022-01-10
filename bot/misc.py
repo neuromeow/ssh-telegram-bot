@@ -29,7 +29,7 @@ class IsAdmin(BoundFilter):
 async def set_bot_commands(dp: Dispatcher):
     await dp.bot.set_my_commands(
         [
-            types.BotCommand("/connect", "SSH configure and connect"),
+            types.BotCommand("/connect", "configure and connect via SSH"),
             types.BotCommand("/whoami", "whoami command"),
             types.BotCommand("/uptime", "uptime command"),
             types.BotCommand("/interactive", "enable/disable interactive mode")
