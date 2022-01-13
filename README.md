@@ -1,6 +1,6 @@
-# Telegram Bot for SSH Connection
+# SSH Telegram Bot
 
-Telegram bot for personal use, providing the ability to connect via Secure Shell (SSH) to the Linux-based machines.
+Telegram bot that provides the ability to connect and execute commands via SSH (Secure Shell) for machines running Linux.
 
 ## Installation and Launch
 
@@ -23,7 +23,7 @@ mv .env.dist .env
 
 - Create a new Telegram bot by talking to [@BotFather](https://t.me/BotFather) and get its API token;
 
-- Use some bot like [@my_id_bot](https://t.me/my_id_bot) to get your Telegram user ID;
+- Use some bot like [@myidbot](https://t.me/myidbot) to get your Telegram user ID;
 
 - Set `BOT_TOKEN` and `BOT_ADMINS` to the values obtained using the steps described above.
 
@@ -71,10 +71,6 @@ mv .env.dist .env
 ```
 python -m bot
 ```
-
-## Authors
-
-[@neuromeow](https://github.com/neuromeow) for details.
 
 ## License
 
