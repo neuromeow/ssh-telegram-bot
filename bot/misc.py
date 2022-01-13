@@ -9,12 +9,14 @@ from bot.config import BOT_ADMINS
 
 
 class ConnectionStatus(StatesGroup):
+    """Class for representing the connection status."""
     configuration = State()
     command_mode = State()
     interactive_mode = State()
 
 
 class ConfigurationOptions(StatesGroup):
+    """Class for representing the configuration options for establishing a connection."""
     hostname = State()
     port = State()
     username = State()
@@ -22,6 +24,8 @@ class ConfigurationOptions(StatesGroup):
 
 
 class IsAdmin(BoundFilter):
+    """A filter class to check if the sender of a Telegram message is an admin."""
+
     async def check(self, message: types.Message) -> bool:
         return str(message.from_user.id) in BOT_ADMINS
 
